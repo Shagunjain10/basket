@@ -11,14 +11,13 @@ from groceries.api.serializers import GrocerySerializer
 
 class GroceryViewSet(viewsets.ViewSet):
     def list(self, request):
-        # get element block wise
-        print("sa")
-        print(request.data)
-        query = request.data['search']
-        print(query)
-        queryset = GroceryItem.objects.filter(
-            Q(title__icontains=query) | Q(description__icontains=query))
-
+        try:
+            print(request.data)
+            query = request.data['search']
+            queryset = GroceryItem.objects.filter(
+                Q(title__icontains=query) | Q(description__icontains=query))
+        except:
+            queryset = GroceryItem.objects.all()
         # Sorting
         try:
             parameter = request.data['parameter']
@@ -41,21 +40,5 @@ class GroceryViewSet(viewsets.ViewSet):
         serializer = GrocerySerializer(queryset, many=True)
         return Response(serializer.data)
 
-    # def retrieve(self, request, pk=None):
-    #     # get one element
-    #     if pk > 20:
-    #         try:
-    #             auth = request.META.get('HTTP_AUTHORIZATION')
-    #             print(auth)
-    #             _, token = auth.split()
-    #             Token.objects.get(key=token)
-    #         except:
-    #             raise exceptions.AuthenticationFailed('Login Required')
-    #     queryset = Element.objects.all()
-    #     element_object = get_object_or_404(queryset, atomic_number=pk)
-    #     serializer = ElementDetailSerializer(element_object)
-    #     return Response(serializer.data)
-
 
 grocery = GroceryViewSet.as_view({'get': 'list'})
-# element = GroceryViewSet.as_view({'get': 'retrieve'})
