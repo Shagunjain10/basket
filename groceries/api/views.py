@@ -1,18 +1,28 @@
+import math
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from rest_framework.pagination import PageNumberPagination
+from rest_framework_extensions.mixins import PaginateByMaxMixin
 
-from rest_framework import viewsets
+from rest_framework import viewsets, exceptions, generics
 from rest_framework.response import Response
-from rest_framework import exceptions
 
 from groceries.models import GroceryItem
 from groceries.api.serializers import GrocerySerializer
 
 
-class GroceryViewSet(viewsets.ViewSet):
-    def list(self, request):
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 100
+    page_size_query_param = 'items'
+
+
+class GroceryList(generics.ListAPIView):
+    queryset = GroceryItem.objects.all()
+
+    def get(self, request):
+
+        queryset = self.get_queryset()
         try:
-            print(request.data)
             query = request.data['search']
             queryset = GroceryItem.objects.filter(
                 Q(title__icontains=query) | Q(description__icontains=query))
@@ -37,8 +47,18 @@ class GroceryViewSet(viewsets.ViewSet):
                     queryset = queryset.order_by('createdAt')
         except:
             pass
-        serializer = GrocerySerializer(queryset, many=True)
-        return Response(serializer.data)
-
-
-grocery = GroceryViewSet.as_view({'get': 'list'})
+        try:
+            request.GET._mutable = True
+            total_page = int(request.GET.get("totalpage"))
+            print(type(total_page))
+            items = len(queryset)
+            print(request.GET)
+            request.GET['items'] = str(math.ceil(items/total_page))
+            print(request.GET)
+            request.GET._mutable = False
+        except:
+            pass
+        paginator = StandardResultsSetPagination()
+        context = paginator.paginate_queryset(queryset, request)
+        serializer = GrocerySerializer(context, many=True)
+        return paginator.get_paginated_response(serializer.data)
