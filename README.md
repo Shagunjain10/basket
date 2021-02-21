@@ -13,3 +13,7 @@ http://localhost:8000/api/groceries/items/
   - ordering:- ascending or descending
 
 - Location:- https://github.com/Shagunjain10/basket/tree/main/groceries/api
+
+- pagination [Query Params]
+  - items:- Number of Items in one page
+  - totalpage:- All items divided into total pages
