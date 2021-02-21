@@ -4,6 +4,8 @@
 - URL
 ```
 http://localhost:8000/api/groceries/items/
+or
+http://basket-grocery.herokuapp.com/api/groceries/all/
 ```
 - method:- GET
 - Retrun the list of GroceryItems register based on parameters.
